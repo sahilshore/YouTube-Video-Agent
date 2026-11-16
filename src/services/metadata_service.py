@@ -24,7 +24,7 @@ def generate_metadata(provider: LLMProvider, script: VideoScript) -> YouTubeMeta
         return YouTubeMetadata(
             title=script.video_title[:100],
             description=f"{script.introduction}\n\n{script.conclusion}\n\nSubscribe for more.",
-            tags=list(dict.fromkeys([*scene.keywords for scene in script.scenes]))[:30],
+            tags=list(dict.fromkeys(keyword for scene in script.scenes for keyword in scene.keywords))[:30],
             hashtags=["#YouTube", "#Education"],
             pinned_comment="What did you think? Share your perspective below!",
         )
