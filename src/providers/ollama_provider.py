@@ -1,0 +1,43 @@
+"""Local Ollama provider."""
+
+from __future__ import annotations
+
+import requests
+
+from src.core.exceptions import ProviderError
+from src.providers.base import LLMProvider, provider_error
+from src.utils.retry_utils import retry
+
+
+class OllamaProvider(LLMProvider):
+    name = "ollama"
+
+    def __init__(self, base_url: str = "http://localhost:11434", model: str = "llama3.2", timeout: float = 30) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.model = model
+        self.timeout = timeout
+
+    def generate_text(self, prompt: str, *, temperature: float = 0.7) -> str:
+        def call() -> str:
+            response = requests.post(f"{self.base_url}/api/generate", json={"model": self.model, "prompt": prompt, "stream": False, "options": {"temperature": temperature}}, timeout=self.timeout)
+            response.raise_for_status()
+            text = response.json().get("response", "")
+            if not text:
+                raise ProviderError("Ollama returned an empty response")
+            return text
+
+        try:
+            return retry(call, attempts=2, retry_on=(requests.RequestException,))
+        except ProviderError:
+            raise
+        except Exception as exc:
+            raise provider_error("Ollama", exc) from exc
+
+    def test_connection(self) -> tuple[bool, str]:
+        try:
+            response = requests.get(f"{self.base_url}/api/tags", timeout=self.timeout)
+            response.raise_for_status()
+            return True, f"Ollama is reachable ({self.model} selected)"
+        except Exception as exc:
+            return False, f"Ollama is not reachable: {exc}"
+
