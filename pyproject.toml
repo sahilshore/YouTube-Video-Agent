@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "youtube-video-agent"
+version = "0.1.0"
+description = "A modular AI-assisted YouTube video creation application."
+requires-python = ">=3.11"
+dependencies = [
+  "streamlit>=1.40,<2",
+  "pydantic>=2.7,<3",
+  "python-dotenv>=1.0,<2",
+  "requests>=2.32,<3",
+  "Pillow>=10.4,<12",
+  "numpy>=2.0,<3",
+  "edge-tts>=7.0,<8",
+  "google-genai>=1.0,<2",
+  "openai>=1.50,<2",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["config*", "src*"]
+
