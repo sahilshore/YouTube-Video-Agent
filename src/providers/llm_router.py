@@ -25,7 +25,7 @@ class LLMRouter:
             "gemini": lambda: GeminiProvider(s.gemini_api_key, s.gemini_model),
             "groq": lambda: GroqProvider(s.groq_api_key, s.groq_base_url, s.groq_model),
             "openrouter": lambda: OpenRouterProvider(s.openrouter_api_key, s.openrouter_base_url, s.openrouter_model, s.free_only_mode),
-            "ollama": lambda: OllamaProvider(s.ollama_base_url, s.ollama_model),
+            "ollama": lambda: OllamaProvider(s.ollama_base_url, s.ollama_model, s.ollama_timeout),
         }
 
     def get(self, name: str | None = None) -> LLMProvider:

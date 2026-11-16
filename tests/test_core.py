@@ -25,6 +25,11 @@ def test_parse_model_json_accepts_fenced_json() -> None:
     assert scene.scene_number == 1
 
 
+def test_scene_duration_defaults_when_provider_omits_it() -> None:
+    scene = Scene(scene_number=1, scene_title="x", narration="y", visual_description="z", visual_search_query="x")
+    assert scene.estimated_duration == 1.0
+
+
 def test_safe_filename_and_root_check(tmp_path: Path) -> None:
     assert safe_filename("hello world!.mp4") == "hello_world_.mp4"
     assert ensure_within(tmp_path / "child", tmp_path) == (tmp_path / "child").resolve()

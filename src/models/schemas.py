@@ -21,7 +21,7 @@ class Scene(BaseModel):
     visual_search_query: str = Field(min_length=1, max_length=200)
     on_screen_text: str = Field(default="", max_length=200)
     keywords: list[str] = Field(default_factory=list, max_length=20)
-    estimated_duration: float = Field(gt=0, le=300)
+    estimated_duration: float = Field(default=1.0, gt=0, le=300)
 
 
 class VideoScript(BaseModel):

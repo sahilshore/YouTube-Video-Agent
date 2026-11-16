@@ -30,7 +30,9 @@ class OllamaProvider(LLMProvider):
             return text
 
         try:
-            return retry(call, attempts=2, retry_on=(requests.RequestException,))
+            return retry(call, attempts=2, retry_on=(requests.ConnectionError,))
+        except requests.Timeout as exc:
+            raise ProviderError(f"Ollama generation timed out after {self.timeout:g} seconds. Increase OLLAMA_TIMEOUT in .env or use a smaller/faster local model. The model may still be loading or generating on CPU.") from exc
         except ProviderError:
             raise
         except Exception as exc:

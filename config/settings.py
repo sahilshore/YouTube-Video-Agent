@@ -32,6 +32,7 @@ class Settings:
     openrouter_model: str = "openrouter/free"
     ollama_base_url: str = "http://localhost:11434"
     ollama_model: str = "llama3.2"
+    ollama_timeout: float = 180.0
     pixabay_api_key: str = ""
     pexels_api_key: str = ""
     tts_voice: str = "en-US-AriaNeural"
@@ -61,6 +62,7 @@ class Settings:
             openrouter_model=os.getenv("OPENROUTER_MODEL", cls.openrouter_model),
             ollama_base_url=os.getenv("OLLAMA_BASE_URL", cls.ollama_base_url),
             ollama_model=os.getenv("OLLAMA_MODEL", os.getenv("DEFAULT_LLM_MODEL", cls.ollama_model)),
+            ollama_timeout=float(os.getenv("OLLAMA_TIMEOUT", str(cls.ollama_timeout))),
             pixabay_api_key=os.getenv("PIXABAY_API_KEY", ""),
             pexels_api_key=os.getenv("PEXELS_API_KEY", ""),
             tts_voice=os.getenv("TTS_VOICE", cls.tts_voice),
