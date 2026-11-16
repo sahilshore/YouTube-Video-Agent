@@ -9,6 +9,7 @@ from src.providers.base import LLMProvider
 from src.providers.llm_router import LLMRouter
 from src.providers.openrouter_provider import OpenRouterProvider
 from src.providers.ollama_provider import OllamaProvider
+from src.providers.gemini_provider import GeminiProvider
 
 
 class FakeProvider(LLMProvider):
@@ -51,4 +52,17 @@ def test_ollama_timeout_error_is_actionable(monkeypatch) -> None:
     monkeypatch.setattr("src.providers.ollama_provider.requests.post", timeout)
     with pytest.raises(ProviderError, match="OLLAMA_TIMEOUT"):
         OllamaProvider(timeout=5).generate_text("hello")
+
+
+def test_gemini_connection_test_uses_model_lookup(monkeypatch) -> None:
+    provider = object.__new__(GeminiProvider)
+    provider.model = "gemini-3.8-flash"
+
+    class Models:
+        def get(self, *, model):
+            assert model == "gemini-3.8-flash"
+            return type("Model", (), {"display_name": "Gemini 3.8 Flash"})()
+
+    provider.client = type("Client", (), {"models": Models()})()
+    assert provider.test_connection() == (True, "Gemini Gemini 3.8 Flash is configured")
 

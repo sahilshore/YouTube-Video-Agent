@@ -46,6 +46,8 @@ class LLMProvider(ABC):
 
 def provider_error(provider: str, exc: Exception) -> ProviderError:
     message = str(exc).lower()
+    if "503" in message or "unavailable" in message or "high demand" in message:
+        return ProviderError(f"{provider} is temporarily unavailable because the provider is at capacity. Try again later or use another configured provider.")
     if "401" in message or "403" in message or "authentication" in message or "api key" in message:
         return ProviderError(f"{provider} authentication failed. Check the configured API key.")
     if "429" in message or "rate limit" in message:

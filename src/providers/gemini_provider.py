@@ -10,7 +10,7 @@ from src.utils.retry_utils import retry
 class GeminiProvider(LLMProvider):
     name = "gemini"
 
-    def __init__(self, api_key: str, model: str = "gemini-2.0-flash") -> None:
+    def __init__(self, api_key: str, model: str = "gemini-3.8-flash") -> None:
         self.require_key(api_key, "Gemini")
         self.model = model
         from google import genai
@@ -31,8 +31,9 @@ class GeminiProvider(LLMProvider):
 
     def test_connection(self) -> tuple[bool, str]:
         try:
-            self.generate_text("Reply with the single word OK.", temperature=0)
-            return True, f"Gemini {self.model} is reachable"
+            model_info = self.client.models.get(model=self.model)
+            display_name = getattr(model_info, "display_name", None) or self.model
+            return True, f"Gemini {display_name} is configured"
         except Exception as exc:
-            return False, str(exc)
+            return False, str(provider_error("Gemini", exc))
 
