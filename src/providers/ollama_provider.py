@@ -20,6 +20,9 @@ class OllamaProvider(LLMProvider):
     def generate_text(self, prompt: str, *, temperature: float = 0.7) -> str:
         def call() -> str:
             response = requests.post(f"{self.base_url}/api/generate", json={"model": self.model, "prompt": prompt, "stream": False, "options": {"temperature": temperature}}, timeout=self.timeout)
+            if response.status_code == 404:
+                detail = response.text.strip()
+                raise ProviderError(f"Ollama model '{self.model}' was not found. Run `ollama list` to see installed models, then set OLLAMA_MODEL in .env. Ollama response: {detail}")
             response.raise_for_status()
             text = response.json().get("response", "")
             if not text:

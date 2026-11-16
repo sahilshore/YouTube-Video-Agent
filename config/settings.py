@@ -60,7 +60,7 @@ class Settings:
             openrouter_base_url=os.getenv("OPENROUTER_BASE_URL", cls.openrouter_base_url),
             openrouter_model=os.getenv("OPENROUTER_MODEL", cls.openrouter_model),
             ollama_base_url=os.getenv("OLLAMA_BASE_URL", cls.ollama_base_url),
-            ollama_model=os.getenv("OLLAMA_MODEL", cls.ollama_model),
+            ollama_model=os.getenv("OLLAMA_MODEL", os.getenv("DEFAULT_LLM_MODEL", cls.ollama_model)),
             pixabay_api_key=os.getenv("PIXABAY_API_KEY", ""),
             pexels_api_key=os.getenv("PEXELS_API_KEY", ""),
             tts_voice=os.getenv("TTS_VOICE", cls.tts_voice),
