@@ -17,17 +17,21 @@ def parse_metadata_response(raw: str) -> YouTubeMetadata:
     return parse_model_json(raw, YouTubeMetadata)
 
 
+def fallback_metadata(script: VideoScript) -> YouTubeMetadata:
+    return YouTubeMetadata(
+        title=script.video_title[:100],
+        description=f"{script.introduction}\n\n{script.conclusion}\n\nSubscribe for more.",
+        tags=list(dict.fromkeys(keyword for scene in script.scenes for keyword in scene.keywords))[:30],
+        hashtags=["#YouTube", "#Education"],
+        pinned_comment="What did you think? Share your perspective below!",
+    )
+
+
 def generate_metadata(provider: LLMProvider, script: VideoScript) -> YouTubeMetadata:
     try:
         return parse_metadata_response(provider.generate_text(build_metadata_prompt(script), temperature=0.5))
     except Exception:
-        return YouTubeMetadata(
-            title=script.video_title[:100],
-            description=f"{script.introduction}\n\n{script.conclusion}\n\nSubscribe for more.",
-            tags=list(dict.fromkeys(keyword for scene in script.scenes for keyword in scene.keywords))[:30],
-            hashtags=["#YouTube", "#Education"],
-            pinned_comment="What did you think? Share your perspective below!",
-        )
+        return fallback_metadata(script)
 
 
 def metadata_to_json(metadata: YouTubeMetadata) -> str:

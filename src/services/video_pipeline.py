@@ -17,7 +17,7 @@ from src.services.audio.tts_service import TTSService
 from src.services.history_service import HistoryService
 from src.services.media.media_downloader import MediaDownloader
 from src.services.media.media_router import MediaRouter
-from src.services.metadata_service import generate_metadata, metadata_to_json
+from src.services.metadata_service import fallback_metadata, generate_metadata, metadata_to_json
 from src.services.script_service import generate_script, script_to_json, script_to_markdown
 from src.services.storage_service import ProjectPaths, ProjectStorage
 from src.services.video.thumbnail_generator import generate_thumbnail
@@ -46,12 +46,12 @@ class VideoPipeline:
             raise RenderError(f"Could not create fallback scene: {result.stderr[-1000:]}")
         return output
 
-    def run(self, request: ScriptRequest, provider_name: str | None = None, voice: str | None = None, music: Path | None = None, callback: ProgressCallback | None = None) -> ProjectPaths:
+    def run(self, request: ScriptRequest, provider_name: str | None = None, voice: str | None = None, music: Path | None = None, callback: ProgressCallback | None = None, script_override: VideoScript | None = None) -> ProjectPaths:
         paths = self.storage.create(request.topic)
         self.history.upsert(paths.project_id, request.topic, "running")
         try:
             self._notify(callback, "script", "Generating structured script", 0.08)
-            script = generate_script(self.router.get(provider_name), request)
+            script = script_override or generate_script(self.router.get(provider_name), request)
             self.storage.write_text(paths.script / "script.json", script_to_json(script))
             self.storage.write_text(paths.script / "script.md", script_to_markdown(script))
 
@@ -91,7 +91,10 @@ class VideoPipeline:
             final_video = VideoRenderer(self.settings).render(clips, paths.output / "final_video.mp4", width, height, durations, mixed_audio, subtitle_srt)
             self._notify(callback, "thumbnail", "Generating thumbnail and metadata", 0.9)
             thumbnail = generate_thumbnail(script.video_title, paths.output / "thumbnail.png")
-            metadata = generate_metadata(self.router.get(provider_name), script)
+            try:
+                metadata = generate_metadata(self.router.get(provider_name), script)
+            except Exception:
+                metadata = fallback_metadata(script)
             self.storage.write_text(paths.output / "youtube_metadata.json", metadata_to_json(metadata))
             self.history.upsert(paths.project_id, request.topic, "complete", str(final_video), str(thumbnail))
             self._notify(callback, "complete", "Video project is ready", 1.0)
